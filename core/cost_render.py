@@ -67,7 +67,7 @@ def _period_block(title: str, period: PeriodCost, *, priced: bool) -> list[str]:
 
 
 def summary_card(report: Report, *, tz_offset_minutes: int = 480) -> str:
-    """``/花费``：一屏看完今天、本月、预算与按模型/会话的拆分。"""
+    """``/花费``：一屏看完今天、本月、预算与按模型拆分。"""
 
     if not report.ok:
         return f"💸 花费查询失败\n\n{report.error or '未知错误'}"
@@ -113,15 +113,6 @@ def summary_card(report: Report, *, tz_offset_minutes: int = 480) -> str:
                 name = name[:32] + "…"
             lines.append(f"  {name}：{money(model.cost) if report.priced else tokens(model.usage.total_tokens)}")
 
-    if report.by_chat:
-        lines.append("")
-        lines.append("按会话（前几条）：")
-        for chat in report.by_chat:
-            lines.append(
-                f"  {_short_umo(chat.umo)}："
-                f"{money(chat.cost) if report.priced else tokens(chat.usage.total_tokens)}"
-            )
-
     return "\n".join(lines)
 
 
@@ -150,17 +141,3 @@ def daily_card(report: Report, *, limit: int = 14) -> str:
     if len(report.daily) > len(rows):
         lines.append(f"（只显示最近 {len(rows)} 天，共 {len(report.daily)} 天有记录）")
     return "\n".join(lines)
-
-
-def _short_umo(umo: str) -> str:
-    """把 ``platform:type:session`` 压成好认的短标签。"""
-
-    text = str(umo or "").strip()
-    if not text:
-        return "(未知会话)"
-    parts = text.split(":", 2)
-    if len(parts) < 3:
-        return text
-    platform, mtype, session = parts
-    kind = "群" if mtype == "GroupMessage" else ("私聊" if mtype == "FriendMessage" else mtype)
-    return f"{platform} {kind} {session}"

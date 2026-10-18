@@ -49,8 +49,7 @@ def _build_statements(
     today_end: Any,
     month_start: Any,
     month_end: Any,
-    top_chats: int,
-) -> tuple[list[Any], int]:
+) -> list[Any]:
     """构造全部查询语句。
 
     拆出来是为了让「查询长什么样」能被单独检查（列名、过滤条件、分组键），
@@ -88,15 +87,6 @@ def _build_statements(
         .group_by(PS.provider_id, PS.provider_model)
     )
 
-    by_chat = (
-        select(PS.umo, *total_cols)
-        .where(*_period_range(month_start, month_end))
-        .group_by(PS.umo)
-        .order_by(func.sum(PS.token_input_other) + func.sum(PS.token_output).desc())
-    )
-    if top_chats > 0:
-        by_chat = by_chat.limit(top_chats)
-
     # 按天分组：SQLite 的 date() 直接截 UTC 日期，而我们要的是**本地**日期，
     # 所以先把边界整体平移回本地再分组，最后在 Python 侧只取 MM-DD。
     daily = (
@@ -106,10 +96,7 @@ def _build_statements(
         .order_by("d")
     )
 
-    return (
-        [today, month, overall, by_model, by_chat, daily],
-        top_chats,
-    )
+    return [today, month, overall, by_model, daily]
 
 
 _TAIL = ("input_other", "input_cached", "output", "calls")
@@ -140,7 +127,6 @@ async def fetch_report(
     monthly_budget: float,
     tz_offset_minutes: int = 480,
     top_models: int = 8,
-    top_chats: int = 8,
 ) -> Report:
     """查一次完整报表。失败时返回 ``ok=False`` 的 ``Report``，不抛异常。"""
 
@@ -148,14 +134,13 @@ async def fetch_report(
     month_start, month_end = month_range(now, tz_offset_minutes=tz_offset_minutes)
 
     try:
-        statements, _ = _build_statements(
+        statements = _build_statements(
             today_start=today_start,
             today_end=today_end,
             month_start=month_start,
             month_end=month_end,
-            top_chats=top_chats,
         )
-        today_rows, month_rows, total_rows, model_rows, chat_rows, daily_rows = (
+        today_rows, month_rows, total_rows, model_rows, daily_rows = (
             await _run_select(context, statements)
         )
     except QueryError as exc:
@@ -176,11 +161,9 @@ async def fetch_report(
         month_rows=_normalize(month_rows, keys=()),
         total_rows=_normalize(total_rows, keys=()),
         by_model_rows=_normalize(model_rows, keys=("provider_id", "provider_model")),
-        by_chat_rows=_normalize(chat_rows, keys=("umo",)),
         daily_rows=_normalize(daily_rows, keys=("created_at",)),
         tz_offset_minutes=tz_offset_minutes,
         top_models=top_models,
-        top_chats=top_chats,
     )
 
 

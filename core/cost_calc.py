@@ -246,16 +246,6 @@ class ModelCost:
 
 
 @dataclass(frozen=True)
-class ChatCost:
-    """按会话拆分的花费。"""
-
-    umo: str
-    usage: Usage
-    cost: float
-    calls: int
-
-
-@dataclass(frozen=True)
 class DailyCost:
     """按天拆分的花费（日期是**本地**日期 ``MM-DD``）。"""
 
@@ -283,7 +273,6 @@ class Report:
     this_month: PeriodCost = field(default_factory=PeriodCost)
     total: PeriodCost = field(default_factory=PeriodCost)
     by_model: list[ModelCost] = field(default_factory=list)
-    by_chat: list[ChatCost] = field(default_factory=list)
     daily: list[DailyCost] = field(default_factory=list)
 
     @property
@@ -339,11 +328,9 @@ def build_report(
     month_rows: list[Mapping[str, Any]],
     total_rows: list[Mapping[str, Any]],
     by_model_rows: list[Mapping[str, Any]],
-    by_chat_rows: list[Mapping[str, Any]],
     daily_rows: list[Mapping[str, Any]],
     tz_offset_minutes: int = 480,
     top_models: int = 8,
-    top_chats: int = 8,
 ) -> Report:
     """把各组聚合行组装成交给渲染层的 ``Report``。
 
@@ -353,7 +340,6 @@ def build_report(
       input_cached, output, calls}``；
     - ``by_model_rows``：``{provider_id, provider_model, input_other,
       input_cached, output, calls}``；
-    - ``by_chat_rows``：``{umo, input_other, input_cached, output, calls}``；
     - ``daily_rows``：``{created_at: date|datetime, input_other,
       input_cached, output, calls}``。
 
@@ -396,20 +382,6 @@ def build_report(
             )
         )
     report.by_model = _top(models, int(top_models))
-
-    chats: list[ChatCost] = []
-    for row in by_chat_rows or []:
-        usage = Usage()
-        usage.add(row)
-        chats.append(
-            ChatCost(
-                umo=str(row.get("umo") or "").strip() or "(未知会话)",
-                usage=usage,
-                cost=usage.cost(prices),
-                calls=_count(row.get("calls")),
-            )
-        )
-    report.by_chat = _top(chats, int(top_chats))
 
     days: list[DailyCost] = []
     for row in daily_rows or []:
