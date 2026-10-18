@@ -3,5 +3,5 @@ display_name: 花费查询
 desc: 按 AstrBot 自带的 provider_stats 统计模型花费：今天/本月花了多少、剩下的预算、按模型拆分、按会话拆分、每天花了多少。只读数据库，不改任何东西。
 short_desc: 查 AstrBot 的模型花费：今天、本月、按模型、按会话、按天。
 version: 1.0.0
-author: Aoi_Karlin
+author: AstralSight
 astrbot_version: ">=4.24"

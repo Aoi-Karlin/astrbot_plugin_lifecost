@@ -60,7 +60,7 @@ def _flag(sec: dict[str, Any], key: str, default: bool = False) -> bool:
 @register(
     PLUGIN_NAME,
     "AstralSight",
-    "按 AstrBot 的 provider_stats 统计模型花费：今天、本月、按模型、按会话、按天。",
+    "按 AstrBot 的 provider_stats 统计模型花费：今天、本月、按模型、按天。",
     "1.0.0",
 )
 class LifeCostPlugin(Star):
@@ -132,7 +132,6 @@ class LifeCostPlugin(Star):
                 monthly_budget=self._budget(),
                 tz_offset_minutes=TZ_OFFSET_MINUTES,
                 top_models=self._top_n(_section(self.conf, "display"), "top_models", 8),
-                top_chats=self._top_n(_section(self.conf, "display"), "top_chats", 8),
             )
         except Exception as exc:  # noqa: BLE001
             logger.exception(f"[{PLUGIN_NAME}] 查询花费失败")
@@ -149,7 +148,7 @@ class LifeCostPlugin(Star):
 
     @cost_group.command("查询")
     async def cost_summary(self, event: AstrMessageEvent):
-        """查看今天与本月的花费、预算余量、按模型和会话的拆分。
+        """查看今天与本月的花费、预算余量、按模型的拆分。
 
         Args:
             event: 消息事件。

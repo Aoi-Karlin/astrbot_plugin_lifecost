@@ -47,12 +47,6 @@
         "default": 8,
         "hint": "填 0 表示全部显示。"
       },
-      "top_chats": {
-        "description": "按会话显示前几名",
-        "type": "int",
-        "default": 8,
-        "hint": "填 0 表示全部显示（会话很多时消息会很长）。"
-      },
       "daily_days": {
         "description": "「每天」显示最近几天",
         "type": "int",
