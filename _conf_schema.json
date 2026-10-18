@@ -1,0 +1,76 @@
+{
+  "pricing": {
+    "description": "单价",
+    "type": "object",
+    "hint": "口径与模型厂商的报价单一致：元 / 百万 token。三个都填 0 时金额显示为 0，只能看 token 数。",
+    "items": {
+      "input_per_mtok": {
+        "description": "输入单价（元/百万 token）",
+        "type": "float",
+        "default": 0.0,
+        "hint": "普通输入 token 的单价。缓存命中的部分按下面那一项算。"
+      },
+      "cached_input_per_mtok": {
+        "description": "缓存输入单价（元/百万 token）",
+        "type": "float",
+        "default": 0.0,
+        "hint": "提示词缓存命中时的单价，通常只有普通输入的 10% 甚至更低。填 0 表示缓存输入不单独计价（会被算成免费，可能低估花费）。"
+      },
+      "output_per_mtok": {
+        "description": "输出单价（元/百万 token）",
+        "type": "float",
+        "default": 0.0,
+        "hint": "输出通常比输入贵好几倍，别漏填。"
+      }
+    }
+  },
+  "budget": {
+    "description": "预算",
+    "type": "object",
+    "hint": "填了才会显示「还剩多少」。不填就只显示已花金额。",
+    "items": {
+      "monthly_budget": {
+        "description": "本月预算（元）",
+        "type": "float",
+        "default": 0.0,
+        "hint": "填 0 表示不设预算，界面上不显示剩余额度和进度条。"
+      }
+    }
+  },
+  "display": {
+    "description": "显示",
+    "type": "object",
+    "items": {
+      "top_models": {
+        "description": "按模型显示前几名",
+        "type": "int",
+        "default": 8,
+        "hint": "填 0 表示全部显示。"
+      },
+      "top_chats": {
+        "description": "按会话显示前几名",
+        "type": "int",
+        "default": 8,
+        "hint": "填 0 表示全部显示（会话很多时消息会很长）。"
+      },
+      "daily_days": {
+        "description": "「每天」显示最近几天",
+        "type": "int",
+        "default": 14,
+        "hint": "填 0 表示本月所有天都显示。"
+      }
+    }
+  },
+  "access": {
+    "description": "权限",
+    "type": "object",
+    "items": {
+      "admin_only": {
+        "description": "只允许管理员查询",
+        "type": "bool",
+        "default": true,
+        "hint": "关掉的话任何人都能查花费。花费信息通常不希望公开给群成员。"
+      }
+    }
+  }
+}
